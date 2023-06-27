@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Little Javascript game by Fauzi Ardiantama</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        outline: 1px solid black;
+        width: 100%;
+        height: 100%;
+      }
+      #UI {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+      }
+      #fps {
+        font-family: monospace;
+        font-size: 12px;
+        color: white;
+        background-color: black;
+        padding: 2px;
+      }
+      button {
+        width: 100px;
+        height: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="UI">
+      <div id="fps"></div>
+      <div>
+        <button id="leftBtn" ontouchstart="triggerKeyEvent('ArrowLeft', 'keydown')" ontouchend="triggerKeyEvent('ArrowLeft', 'keyup')" onmousedown="triggerKeyEvent('ArrowLeft', 'keydown')" onmouseup="triggerKeyEvent('ArrowLeft', 'keyup')">Left</button>
+        <button id="rightBtn" ontouchstart="triggerKeyEvent('ArrowRight', 'keydown')" ontouchend="triggerKeyEvent('ArrowRight', 'keyup')" onmousedown="triggerKeyEvent('ArrowRight', 'keydown')" onmouseup="triggerKeyEvent('ArrowRight', 'keyup')">Right</button>
+        <button id="upBtn" ontouchstart="triggerKeyEvent('ArrowUp', 'keydown')" ontouchend="triggerKeyEvent('ArrowUp', 'keyup')" onmousedown="triggerKeyEvent('ArrowUp', 'keydown')" onmouseup="triggerKeyEvent('ArrowUp', 'keyup')">Up</button>
+      </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+      function resizeCanvas() {
+        var canvas = document.getElementById("gameCanvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      // Resize the canvas initially
+      resizeCanvas();
+
+      // Resize the canvas whenever the window is resized
+      window.addEventListener("resize", resizeCanvas);
+    </script>
+  <script>
+      // Function to trigger keyboard events
+      function triggerKeyEvent(key, eventType) {
+        document.dispatchEvent(new KeyboardEvent(eventType, { 'key': key }));
+      }
+  </script>
+    <script src="sprite.js"></script>
+    <script src="player.js"></script>
+    <script src="platform.js"></script>
+    <script src="obstacle.js"></script>
+    <script src="camera.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>
