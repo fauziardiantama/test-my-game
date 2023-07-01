@@ -32,6 +32,9 @@ class Player extends Sprite {
       this.isWalking = false;
       this.playerJumpStrength = playerJumpStrength;
 
+      this.isBounce          = false;
+      this.framesSinceBounce = null;
+
       this.frameCount = 5;
       this.currentFrame = 0;
       this.frameIndex = 0;
@@ -42,38 +45,48 @@ class Player extends Sprite {
       document.addEventListener("keyup", this.handleKeyUp.bind(this));
     }
 
-    /**
-     * Draw the player.
-     * @param {CanvasRenderingContext2D} context - The context for drawing the player.
-     * @returns {void}
-     */
     draw(context) {
       if (this.direction === "right") {
         this.idle = "right";
-        context.drawImage(this.image, this.currentFrame, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+        context.drawImage(this.image, this.currentFrame, 0, 50, 50, this.x, this.y, this.width, this.height);
       } else if (this.direction === "left") {
         this.idle = "left";
         context.save();
         context.scale(-1, 1);
-        context.drawImage(this.image, this.currentFrame, 0, this.width, this.height, -this.x - this.width, this.y, this.width, this.height);
+        context.drawImage(this.image, this.currentFrame, 0, 50, 50, -this.x - this.width, this.y, this.width, this.height);
         context.restore();
       } else {
         if (this.idle === "right") {
-          context.drawImage(this.image, this.currentFrame, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+          context.drawImage(this.image, this.currentFrame, 0, 50,50, this.x, this.y, this.width, this.height);
         } else if (this.idle === "left") {
           context.save();
           context.scale(-1, 1);
-          context.drawImage(this.image, this.currentFrame, 0, this.width, this.height, -this.x - this.width, this.y, this.width, this.height);
+          context.drawImage(this.image, this.currentFrame, 0, 50,50, -this.x - this.width, this.y, this.width, this.height);
           context.restore();
         }
       }
     }
+    bounce() {
+        //player.bounce()
+        if (
+          this.isBounce &&
+          this.framesSinceBounce != null &&
+          this.framesSinceBounce >= 25
+      ) {
+          this.isBounce = false;
+          this.stopMoving();
+          this.framesSinceBounce = null;
+      }
+      if (this.framesSinceBounce != null) {
+          this.framesSinceBounce++;
+      }
+    }
+        
 
-    update() {
+    update(context, gravity, canvas) {
+      this.move(canvas.width*5);
       if (this.isLanding) {
         this.image.src = 'idle.png';
-        this.width = 50;
-        this.height = 50;
         this.frameCount = 5;
         this.currentFrame = 0;
         this.frameIndex = 0;
@@ -83,8 +96,6 @@ class Player extends Sprite {
       }
       if (this.startJumping) {
         this.image.src = 'jump.png';
-        this.width = 50;
-        this.height = 50;
         this.frameCount = 1;
         this.currentFrame = 0;
         this.frameIndex = 0;
@@ -94,8 +105,6 @@ class Player extends Sprite {
       }
       if (this.startWalking) {
         this.image.src = 'waddling.png';
-        this.width = 50;
-        this.height = 50;
         this.frameCount = 6;
         this.currentFrame = 0;
         this.frameIndex = 0;
@@ -108,14 +117,14 @@ class Player extends Sprite {
       if (this.frameCounter >= this.frameInterval) {
         this.frameCounter = 0;
         this.frameIndex = (this.frameIndex + 1) % this.frameCount;
-        this.currentFrame = this.frameIndex * this.width;
+        //1,2,3,4,0
+        this.currentFrame = this.frameIndex * 50;
       }
+      this.draw(context);
+      this.applyGravity(canvas, gravity); 
+      this.bounce();
     }
 
-    /**
-     * Check if the player is colliding with something.
-     * @returns {boolean} - Whether the player is colliding with something.
-     */
     checkCollision(rect) {
       return (
         this.x < rect.x + rect.width &&
@@ -125,39 +134,26 @@ class Player extends Sprite {
       );
     }
 
-    /**
-     * Move the player to the right.
-     * @returns {void}
-     */
     moveRight() {
       this.direction = "right";
     }
 
-    /**
-     * Move the player to the left.
-     * @returns {void}
-     */
     moveLeft() {
       this.direction = "left";
     }
 
-    /**
-     * Move the player.
-     * @returns {void}
-     */
-    move(){
+    move(canvasWidth){
         if (this.direction === "right") {
+          if (this.x < canvasWidth - this.width) {
             this.x += this.speed;
+          }
         } else if (this.direction === "left") {
             if (this.x > 0) {
                 this.x -= this.speed;
             }
         }
     }
-    /**
-     * Make the player jump.
-     * @returns {void}
-     */
+
     jump() {
       if (!this.isJumping) {
         this.velocityY = -this.playerJumpStrength;
@@ -166,22 +162,12 @@ class Player extends Sprite {
       }
     }
 
-    /**
-     * Stop the player from moving.
-     * @returns {void}
-     */
     stopMoving() {
       this.isLanding = true;
       this.isWalking = false;
       this.direction = null;
     }
 
-    /**
-     * Apply gravity to the player.
-     * @param {HTMLCanvasElement} canvas - The canvas element.
-     * @param {number} gravity - The gravity to apply.
-     * @returns {void}
-     */
     applyGravity(canvas, gravity) {
       // If player y is less than canvas height (player is above the ground) or player is moving up (velocityY < 0
       if (this.y < canvas.height - this.height || this.velocityY < 0) {
@@ -193,11 +179,7 @@ class Player extends Sprite {
         this.isJumping = false;
       }
     }
-    /**
-     * Handle key down events.
-     * @param {KeyboardEvent} event - The event.
-     * @returns {void}
-     */
+
     handleKeyDown(event) {
       if (event.key === "ArrowRight") {
         if (!this.isWalking && !this.startWalking && !this.isJumping) {
@@ -216,11 +198,6 @@ class Player extends Sprite {
       }
     }
 
-    /**
-     * Handle key up events.
-     * @param {KeyboardEvent} event - The event.
-     * @returns {void}
-     */
     handleKeyUp(event) {
       if (
         (event.key === "ArrowRight" && this.direction === "right") ||

@@ -43,4 +43,9 @@ class Platform {
     applyGravity(canvas) {
         this.y = canvas.height - this.height;
     }
+
+    update(canvas,context,camera) {
+        this.applyGravity(canvas);
+        this.draw(context, camera);
+    }
 }

@@ -25,12 +25,16 @@ class Camera {
      * @param {HTMLCanvasElement} canvas - The canvas element.
      * @returns {void}
      */
-    update(player, canvas) {
-      if (player.x > canvas.width / 2) {
-        this.x = player.x - canvas.width / 2;
-      } else {
+    update(player, canvas, context) {
+      this.responsiveUpdate(canvas);
+      if (player.x < canvas.width / 2) {
         this.x = 0;
+      } else if (player.x > canvas.width * 4 + canvas.width / 2) {
+        this.x = canvas.width * 4;
+      } else {
+        this.x = player.x - canvas.width / 2;
       }
+      this.apply(context);
     }
 
     /**
@@ -42,7 +46,13 @@ class Camera {
       context.save();
       context.translate(-this.x, -this.y);
     }
-  
+
+    responsiveUpdate(canvas) {
+      this.width = canvas.width;
+      this.height = canvas.height;
+      this.y = canvas.height - this.height;
+    }
+
     /**
      * Reset the camera's translation.
      * @param {CanvasRenderingContext2D} context - The context to reset the translation on.
@@ -50,11 +60,5 @@ class Camera {
      */
     reset(context) {
       context.restore();
-    }
-
-    responsiveUpdate(canvas) {
-      this.width = canvas.width;
-      this.height = canvas.height;
-      this.y = canvas.height - this.height;
     }
 }
