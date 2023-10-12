@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas</title>
+</head>
+<body>
+    <canvas id="myCanvas" width="320" height="320"></canvas>
+    <script>
+        function drawTiledImage(imagePath, canvasId, tilesWidth, tilesHeight, objectWidth, objectHeight) {
+            var canvas = document.getElementById(canvasId);
+            var ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            var img = new Image();
+            img.src = imagePath;
+
+            img.onload = function() {
+                var numX = tilesWidth / objectWidth; //this.width == tilesWidth
+                var numY = tilesHeight / objectHeight; //this.height == tilesHeight
+
+                for (var i = 0; i < numX * numY; i++) {
+                    var x = i % numX;
+                    var y = Math.floor(i / numX);
+                    ctx.drawImage(img, 0, 0, img.width, img.height, x * objectWidth, y * objectHeight, objectWidth, objectHeight);
+                }
+            };
+        }
+
+        // Gunakan fungsi drawTiledImage dengan parameter yang sesuai
+        drawTiledImage('box.png', 'myCanvas', 128, 256, 64, 64);
+    </script>
+</body>
+</html>

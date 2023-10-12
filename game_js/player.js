@@ -1,22 +1,9 @@
-/**
- * Represents a player.
- * @class Player
- */
+import { Sprite } from "./sprite.js";
+
 class Player extends Sprite {
-    /**
-     * Create a player.
-     * @constructor
-     * @property {number} x - The player's x position.
-     * @property {number} y - The player's y position.
-     * @property {number} width - The player's width.
-     * @property {number} height - The player's height.
-     * @property {string} color - The player's color.
-     * @property {number} speed - The player's speed.
-     * @property {number} playerJumpStrength - The player's jump strength.
-     * @returns {void} 
-     */
-    constructor(x, y, width, height, speed, playerJumpStrength) {
-      super('idle.png', 250,50);
+
+    constructor(x, y, width, height, speed, playerJumpStrength, scrollelement) {
+      super('img/idle.png',width,height,width,height);
       this.x = x;
       this.y = y;
       this.width = width;
@@ -43,6 +30,7 @@ class Player extends Sprite {
 
       document.addEventListener("keydown", this.handleKeyDown.bind(this));
       document.addEventListener("keyup", this.handleKeyUp.bind(this));
+      scrollelement.addEventListener("scroll", this.handleScroll.bind(this));
     }
 
     draw(context) {
@@ -67,7 +55,6 @@ class Player extends Sprite {
       }
     }
     bounce() {
-        //player.bounce()
         if (
           this.isBounce &&
           this.framesSinceBounce != null &&
@@ -81,12 +68,12 @@ class Player extends Sprite {
           this.framesSinceBounce++;
       }
     }
-        
 
     update(context, gravity, canvas) {
+      this.canvas = canvas;
       this.move(canvas.width*5);
       if (this.isLanding) {
-        this.image.src = 'idle.png';
+        this.image.src = 'img/idle.png';
         this.frameCount = 5;
         this.currentFrame = 0;
         this.frameIndex = 0;
@@ -95,7 +82,7 @@ class Player extends Sprite {
         this.isLanding = false;
       }
       if (this.startJumping) {
-        this.image.src = 'jump.png';
+        this.image.src = 'img/jump.png';
         this.frameCount = 1;
         this.currentFrame = 0;
         this.frameIndex = 0;
@@ -104,7 +91,7 @@ class Player extends Sprite {
         this.startJumping = false;
       }
       if (this.startWalking) {
-        this.image.src = 'waddling.png';
+        this.image.src = 'img/waddling.png';
         this.frameCount = 6;
         this.currentFrame = 0;
         this.frameIndex = 0;
@@ -123,6 +110,7 @@ class Player extends Sprite {
       this.draw(context);
       this.applyGravity(canvas, gravity); 
       this.bounce();
+      //console.log(this.y);
     }
 
     checkCollision(rect) {
@@ -169,7 +157,7 @@ class Player extends Sprite {
     }
 
     applyGravity(canvas, gravity) {
-      // If player y is less than canvas height (player is above the ground) or player is moving up (velocityY < 0
+
       if (this.y < canvas.height - this.height || this.velocityY < 0) {
         this.velocityY += gravity;
         this.y += this.velocityY;
@@ -193,7 +181,8 @@ class Player extends Sprite {
           this.isWalking = true;
         }
         this.moveLeft();
-      } else if (event.key === "ArrowUp") {
+      } else if (event.key === "x") {
+        //console.log("jump");
         this.jump();
       }
     }
@@ -207,4 +196,52 @@ class Player extends Sprite {
       }
     }
 
+    handleScroll(event) {
+      this.element = event.target;
+      this.minScroll = 0;
+      this.maxScroll = this.element.scrollHeight - this.element.clientHeight;
+
+      if (this.x <= this.canvas.width*5 - this.width && this.x >= 0) {
+        this.x = Math.round((this.element.scrollTop / this.maxScroll) * 100) * this.canvas.width*5 / 100;
+        this.x = Math.min(this.x, this.canvas.width*5 - this.width);
+        if (this.lastScroll != null && this.lastScroll < this.element.scrollTop) {
+          if (!this.isWalking && !this.startWalking && !this.isJumping) {
+            this.startWalking = true;
+            this.isWalking = true;
+          }
+          this.moveRight();
+        }
+        if (this.lastScroll != null && this.lastScroll > this.element.scrollTop) {
+          if (!this.isWalking && !this.startWalking && !this.isJumping) {
+            this.startWalking = true;
+            this.isWalking = true;
+          }
+          this.moveLeft();
+        }
+        this.lastScroll = this.element.scrollTop;
+      }
+
+      clearTimeout(this.scrollingTimer);
+      // Start a new timer
+      this.scrollingTimer = setTimeout(function() {
+        this.stopMoving();
+      }.bind(this), 300);
+    }
+
+    setDirection(direction) {
+        this.direction = direction;
+    }
+
+    setWalking(walking) {
+      this.isWalking = walking;
+    }
+
+    setX(x) {
+        this.x = x;
+    }
+    setY(y) {
+        this.y = y;
+    }
 }
+
+export {Player};

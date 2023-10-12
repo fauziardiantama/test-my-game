@@ -14,9 +14,11 @@ class Structure {
         });
     }
 
-    update(canvas,context, player, camera) {
+    update(context, player, camera) {
         this.obstacleArr.forEach(obstacle => {
-            obstacle.update(canvas,context, player, camera);
+            obstacle.update(context, player, camera);
         });
     }
 }
+
+export {Structure};
